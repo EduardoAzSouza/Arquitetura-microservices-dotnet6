@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connection = builder.Configuration["MySqlConnection:MySqlConnectionString"];
 
-builder.Services.AddDbContext<MySqlContext>(options => options.
+builder.Services.AddDbContext<MySQLContext>(options => options.
     UseMySql(connection,
         new MySqlServerVersion(
             new Version(8, 0, 21))));
@@ -23,7 +23,7 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
 builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", options =>
 {

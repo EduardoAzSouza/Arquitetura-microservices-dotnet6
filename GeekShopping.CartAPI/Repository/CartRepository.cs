@@ -8,10 +8,10 @@ namespace GeekShopping.CartAPI.Repository
 {
     public class CartRepository : ICartRepository
     {
-        private readonly MySqlContext _context;
+        private readonly MySQLContext _context;
         private IMapper _mapper;
 
-        public CartRepository(MySqlContext context, IMapper mapper)
+        public CartRepository(MySQLContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -67,7 +67,7 @@ namespace GeekShopping.CartAPI.Repository
                     .Where(c => c.CartHeaderId == cartDetail.CartHeaderId).Count();
 
                 _context.CartDetails.Remove(cartDetail);
-                
+
                 if (total == 1)
                 {
                     var cartHeaderToRemove = await _context.CartHeaders
@@ -89,7 +89,7 @@ namespace GeekShopping.CartAPI.Repository
             //Checks if the product is already saved in the database if it does not exist then save
             var product = await _context.Products.FirstOrDefaultAsync(
                 p => p.Id == vo.CartDetails.FirstOrDefault().ProductId);
-            
+
             if (product == null)
             {
                 _context.Products.Add(cart.CartDetails.FirstOrDefault().Product);
@@ -136,7 +136,7 @@ namespace GeekShopping.CartAPI.Repository
                     cart.CartDetails.FirstOrDefault().CartHeaderId = cartDetail.CartHeaderId;
                     _context.CartDetails.Update(cart.CartDetails.FirstOrDefault());
                     await _context.SaveChangesAsync();
-                } 
+                }
             }
             return _mapper.Map<CartVO>(cart);
         }
