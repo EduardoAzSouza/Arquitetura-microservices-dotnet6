@@ -3,11 +3,6 @@ using GeekShopping.Web.Services.IServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace GeekShopping.Web.Controllers
 {
@@ -52,7 +47,10 @@ namespace GeekShopping.Web.Controllers
 
             if (response?.CartHeader != null)
             {
-                
+                foreach (var detail in response.CartDetails)
+                {
+                    response.CartHeader.PurchaseAmount += (detail.Product.Price * detail.Count);
+                }
             }
             return response;
         }
