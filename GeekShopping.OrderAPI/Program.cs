@@ -35,7 +35,7 @@ builder.Services.AddControllers(options => options.SuppressImplicitRequiredAttri
 
 builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", options =>
 {
-    options.Authority = "https://localhost:4003/";
+    options.Authority = "https://localhost:4435/";
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateAudience = false

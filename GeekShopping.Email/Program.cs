@@ -1,18 +1,32 @@
-using GeekShopping.PaymentAPI.MessageConsumer;
-using GeekShopping.PaymentAPI.RabbitMQSender;
-using GeekShopping.PaymentProcessor;
+using GeekShopping.Email.MessageConsumer;
+using GeekShopping.Email.Model.Context;
+using GeekShopping.Email.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var connection = builder.Configuration["MySqlConnection:MySqlConnectionString"];
 
-builder.Services.AddSingleton<IProcessPayment, ProcessPayment>();
+builder.Services.AddDbContext<MySQLContext>(options => 
+options.UseMySql(
+    connection, 
+    new MySqlServerVersion(new Version(8, 0, 21))));
 
-builder.Services.AddSingleton<IRabbitMQMessageSender, RabbitMQMessageSender>();
+var dbContextBuilder = new DbContextOptionsBuilder<MySQLContext>();
+dbContextBuilder.UseMySql(
+    connection,
+    new MySqlServerVersion(new Version(8, 0, 21))
+);
+
+builder.Services.AddSingleton(new EmailRepository(dbContextBuilder.Options));
+
+builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 
 builder.Services.AddHostedService<RabbitMQPaymentConsumer>();
+
+// Add services to the container.
 
 builder.Services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
@@ -39,7 +53,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "GeekShopping.PaymentAPI", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "GeekShopping.Email", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"Enter 'Bearer' [space] and your token!",
@@ -78,8 +92,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseRouting();
 
 app.UseAuthentication();
 
