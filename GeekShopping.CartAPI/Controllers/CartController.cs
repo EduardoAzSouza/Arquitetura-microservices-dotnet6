@@ -2,7 +2,13 @@
 using GeekShopping.CartAPI.Messages;
 using GeekShopping.CartAPI.RabbitMQSender;
 using GeekShopping.CartAPI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace GeekShopping.CartAPI.Controllers
 {
@@ -81,7 +87,8 @@ namespace GeekShopping.CartAPI.Controllers
             if (cart == null) return NotFound();
             if (!string.IsNullOrEmpty(vo.CouponCode))
             {
-                CouponVO coupon = await _couponRepository.GetCoupon(vo.CouponCode, token);
+                CouponVO coupon = await _couponRepository.GetCoupon(
+                    vo.CouponCode, token);
                 if (vo.DiscountAmount != coupon.DiscountAmount)
                 {
                     return StatusCode(412);
@@ -92,6 +99,8 @@ namespace GeekShopping.CartAPI.Controllers
 
             // RabbitMQ logic comes here!!!
             _rabbitMQMessageSender.SendMessage(vo, "checkoutqueue");
+
+            await _cartRepository.ClearCart(vo.UserId);
 
             return Ok(vo);
         }

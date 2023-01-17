@@ -1,7 +1,6 @@
 ﻿using GeekShopping.CartAPI.Data.ValueObjects;
-using Microsoft.EntityFrameworkCore;
-using System.Net.Http.Headers;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace GeekShopping.CartAPI.Repository

@@ -1,35 +1,18 @@
-using GeekShopping.OrderAPI.MessageConsumer;
-using GeekShopping.OrderAPI.Model.Context;
-using GeekShopping.OrderAPI.RabbitMQSender;
-using GeekShopping.OrderAPI.Repository;
-using Microsoft.EntityFrameworkCore;
+using GeekShopping.PaymentAPI.MessageConsumer;
+using GeekShopping.PaymentAPI.RabbitMQSender;
+using GeekShopping.PaymentProcessor;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connection = builder.Configuration["MySqlConnection:MySqlConnectionString"];
+// Add services to the container.
 
-builder.Services.AddDbContext<MySQLContext>(options => options.
-    UseMySql(connection,
-        new MySqlServerVersion(
-            new Version(8, 0, 21))));
-
-var dbContextBuilder = new DbContextOptionsBuilder<MySQLContext>();
-dbContextBuilder.UseMySql(
-    connection,
-    new MySqlServerVersion(new Version(8, 0, 21))
-);
-
-builder.Services.AddSingleton(new OrderRepository(dbContextBuilder.Options));
-
-builder.Services.AddHostedService<RabbitMQCheckoutConsumer>();
-
-builder.Services.AddHostedService<RabbitMQPaymentConsumer>();
+builder.Services.AddSingleton<IProcessPayment, ProcessPayment>();
 
 builder.Services.AddSingleton<IRabbitMQMessageSender, RabbitMQMessageSender>();
 
-// Add services to the container.
+builder.Services.AddHostedService<RabbitMQPaymentConsumer>();
 
 builder.Services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
@@ -56,7 +39,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "GeekShopping.OrderAPI", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "GeekShopping.PaymentAPI", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"Enter 'Bearer' [space] and your token!",
@@ -95,6 +78,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
 
 app.UseAuthentication();
 
